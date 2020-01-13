@@ -66,8 +66,9 @@ class Mul16Plugin extends Plugin[VexRiscv]{
       insert(MUL_HH) := aHigh * bHigh
     }
 
-    memory plug new Area {
-      import memory._
+    val injectionStage = if(pipeline.memory != null) pipeline.memory else pipeline.execute
+    injectionStage plug new Area {
+      import injectionStage._
 
       val ll = UInt(32 bits)
       val lh = UInt(33 bits)
@@ -83,8 +84,9 @@ class Mul16Plugin extends Plugin[VexRiscv]{
       insert(MUL) := ((hh ## ll(31 downto 16)).asUInt + hllh) ## ll(15 downto 0)
     }
 
-    writeBack plug new Area {
-      import writeBack._
+    val memStage = stages.last
+    memStage plug new Area {
+      import memStage._
       val aSigned,bSigned = Bool
       switch(input(INSTRUCTION)(13 downto 12)) {
         is(B"01") {
